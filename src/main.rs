@@ -1,26 +1,35 @@
 use std::io;
+use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Bill {
     name: String,
     amount: f64,
 }
 
 struct Bills {
-    inner: Vec<Bill>,
+    inner: HashMap<String, Bill>,
 }
 
 impl Bills {
     fn new() -> Self {
-        Self { inner: vec![] }
+        Self { inner: HashMap::new() }
     }
 
     fn add(&mut self, bill: Bill) {
-        self.inner.push(bill)
+        self.inner.insert(bill.name.clone(), bill);
     }
 
-    fn get_all(&self) -> &Vec<Bill> {
-        &self.inner
+    fn get_all(&self) -> Vec<Bill> {
+        let mut bills = Vec::new();
+        for bill in self.inner.values() {
+            bills.push(bill.clone());
+        }
+        bills
+    }
+
+    fn remove(&mut self, name: &str) -> bool {
+        self.inner.remove(name).is_some()
     }
 }
 
@@ -54,6 +63,20 @@ fn add_bill_menu(bills: &mut Bills) {
     println!("Bills added")
 }
 
+fn remove_bill_menu(bills: &mut Bills) {
+    for bill in bills.get_all() {
+        println!("{:?}", bill);
+    }
+
+    println!("Enter bill name to remove:");
+    let input = get_input();
+    if bills.remove(&input) {
+        println!("removed");
+    } else {
+        println!("bill not found");
+    }
+}
+
 fn view_bills_menu(bills: &Bills) {
     for bill in bills.get_all() {
         println!("{:?}", bill);
@@ -66,6 +89,7 @@ fn main_menu() {
         println!("== Manage Bills ==");
         println!("1. Add bill");
         println!("2. View bills");
+        println!("3. Remove bill");
         println!("");
         println!("Enter selection:");
     }
@@ -78,6 +102,7 @@ fn main_menu() {
         match input.as_str() {
             "1" => add_bill_menu(&mut bills),
             "2" => view_bills_menu(&bills),
+            "3" => remove_bill_menu(&mut bills),
             _ => break,
         }
     }    
